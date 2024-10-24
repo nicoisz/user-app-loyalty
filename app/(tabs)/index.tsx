@@ -1,11 +1,72 @@
-import { Image, StyleSheet, Platform } from "react-native";
-
+import React, { useEffect } from "react";
+import { Image, StyleSheet, Platform, Alert } from "react-native";
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import messaging from "@react-native-firebase/messaging";
 
 export default function HomeScreen() {
+  const requestPermissions = async () => {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      console.log("Authorization status:", authStatus);
+    }
+
+    return authStatus;
+  };
+
+  useEffect(() => {
+    requestPermissions().then((authStatus) => {
+      if (
+        authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+        authStatus === messaging.AuthorizationStatus.PROVISIONAL
+      ) {
+        messaging()
+          .getToken()
+          .then((token) => {
+            console.log("FCM Token:", token);
+          });
+      } else {
+        console.log("Permission not granted", authStatus);
+      }
+    });
+
+    messaging()
+      .getInitialNotification()
+      .then(async (remoteMessage) => {
+        if (remoteMessage) {
+          console.log(
+            "Notification caused app to open",
+            remoteMessage.notification
+          );
+        }
+      });
+
+    //assume a message-notification contains a "type" key in the data payload of the notification
+    messaging().onNotificationOpenedApp((remoteMessage) => {
+      console.log(
+        "Notification caused app to open from background state",
+        remoteMessage.notification
+      );
+    });
+
+    // register background handler
+    messaging().setBackgroundMessageHandler(async (remoteMessage) => {
+      console.log("Message handled in the background!", remoteMessage);
+    });
+
+    const unsubscribe = messaging().onMessage(async (remoteMessage) => {
+      Alert.alert("A new FCM message arrived!", JSON.stringify(remoteMessage));
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -17,7 +78,7 @@ export default function HomeScreen() {
       }
     >
       <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hello World!</ThemedText>
+        <ThemedText type="title">Hello!</ThemedText>
         <HelloWave />
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
@@ -46,8 +107,6 @@ export default function HomeScreen() {
           <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText>{" "}
           to get a fresh <ThemedText type="defaultSemiBold">app</ThemedText>{" "}
           directory. This will move the current{" "}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{" "}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
         </ThemedText>
       </ThemedView>
     </ParallaxScrollView>
@@ -55,20 +114,15 @@ export default function HomeScreen() {
 }
 
 const styles = StyleSheet.create({
+  reactLogo: {
+    width: 100,
+    height: 100,
+  },
   titleContainer: {
-    flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    marginVertical: 20,
   },
   stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: "absolute",
+    marginVertical: 10,
   },
 });
