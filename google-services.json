@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "72162603200",
+    "project_id": "loyalty-app-9b93b",
+    "storage_bucket": "loyalty-app-9b93b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:72162603200:android:f3f338daf5a8e351ccfd25",
+        "android_client_info": {
+          "package_name": "com.nicoisz.userapployalty"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9691a8oIZRh-jAWsEyo3wsnsjYw-_-B8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
